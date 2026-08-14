@@ -125,4 +125,79 @@ def remove_teacher(teacher_id):
         print(f"No teacher with ID {teacher_id} has been found")
 
 
-# 
+# Check-in and statistics
+def check_in(student_id, course_id):
+    student_exists = any(s['id'] == student_id for s in app_data['students'])
+    if not student_exists:
+        print(f"No student with ID {student_id} was found")
+        return False
+    timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    record = {
+        "student_id": student_id,
+        "course_id": course_id,
+        "timestamp": timestamp
+    }
+    app_data['attendance'].append(record)
+    print(f"Student {student_id} checked in! Course: {course_id} Time: {timestamp}")
+    return True
+
+def view_attendance_records():
+    records = app_data['attendance']
+    if not records:
+        print("No attendance records found")
+        return
+    print("\n" + "="*60)
+    print("Attendance Records")
+    print("="*60)
+    for record in records:
+        student_name = "Unknown"
+        for s in app_data['students']:
+            if s['id'] == record['student_id']:
+                student_name = s['name']
+                break
+        print(f"Student: {student_name} (ID: {record['student_id']}) | "
+              f"Course: {record['course_id']} | "
+              f"Time: {record['timestamp']}")
+    print("="*60)
+
+def show_statistics():
+    print("\n" + "="*50)
+    print("📊 System Statistics")
+    print("="*50)
+    print(f"Total Students: {len(app_data['students'])}")
+    print(f"Total Teachers: {len(app_data['teachers'])}")
+    print(f"Total Check-ins: {len(app_data['attendance'])}")
+    course_count = {}
+    for student in app_data['students']:
+        for course in student.get('enrolled_in', []):
+            course_count[course] = course_count.get(course, 0) + 1
+    
+    if course_count:
+        most_popular = max(course_count, key=course_count.get)
+        print(f"Most Popular Course: {most_popular} ({course_count[most_popular]} students)")
+    print("="*50)
+
+
+#main menu
+def print_student_card(student_id):
+    student = None
+    for s in app_data['students']:
+        if s['id'] == student_id:
+            student = s
+            break
+    if not student:
+        print(f"Student with ID {student_id} not found")
+        return
+    filename = f"student_card_{student_id}.txt"
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write("="*35 + "\n")
+        f.write("     Music School Student ID\n")
+        f.write("="*35 + "\n")
+        f.write(f"Student ID: {student['id']}\n")
+        f.write(f"Name: {student['name']}\n")
+        f.write(f"Enrolled Courses: {', '.join(student.get('enrolled_in', [])) or 'None'}\n")
+        f.write("="*35 + "\n")
+        f.write(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    
+    print(f"Student card generated: {filename}")
+
