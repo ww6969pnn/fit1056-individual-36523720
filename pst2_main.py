@@ -28,6 +28,7 @@ def save_data(path=DATA_FILE):
     print("Data saved successfully.")
 
 #student management
+#additional functions(add students)
 def add_student(name, courses=None):
     if courses is None:
         courses=[]
@@ -42,6 +43,7 @@ def add_student(name, courses=None):
     app_data['next_student_id'] += 1
     print(f"Student '{name}' added successfully! ID: {student_id}")
 
+#additional functions(list students)
 def list_all_students():
     students = app_data['students']
     if not students:
@@ -53,22 +55,7 @@ def list_all_students():
         print(f"ID: {student['id']} | Name: {student['name']} | Course: {courses}")
     print("="*50)
 
-def list_students_by_course(course_name):
-    if not course_name:
-        print("Please enter the course name.")
-        return
-    found=[]
-    for student in app_data['students']:
-        if course_name in student.get('enrolled_in', []):
-            found.append(student)
-    if found:
-        print(f"\n Students who choose to take '{course_name}'")
-        for s in found:
-            print(f" -{s['name']}(ID: {s['id']})")
-    else:
-        print(f"No students have chosen to take '{course_name}'")
-
-def updata_student(student_id, **fields):
+def update_student(student_id, **fields):
     for student in app_data['students']:
         if student['id'] == student_id:
             student.update(fields)
@@ -96,6 +83,7 @@ def add_teacher(name, speciality):
     app_data['next_teacher_id']+=1
     print(f"Teacher '{name}' added successfully! ID: {teacher_id}")
 
+#addtional functions(list teachers)
 def list_all_teachers():
     teachers=app_data['teachers']
     if not teachers:
@@ -142,42 +130,6 @@ def check_in(student_id, course_id):
     print(f"Student {student_id} checked in! Course: {course_id} Time: {timestamp}")
     return True
 
-def view_attendance_records():
-    records = app_data['attendance']
-    if not records:
-        print("No attendance records found")
-        return
-    print("\n" + "="*60)
-    print("Attendance Records")
-    print("="*60)
-    for record in records:
-        student_name = "Unknown"
-        for s in app_data['students']:
-            if s['id'] == record['student_id']:
-                student_name = s['name']
-                break
-        print(f"Student: {student_name} (ID: {record['student_id']}) | "
-              f"Course: {record['course_id']} | "
-              f"Time: {record['timestamp']}")
-    print("="*60)
-
-def show_statistics():
-    print("\n" + "="*50)
-    print("📊 System Statistics")
-    print("="*50)
-    print(f"Total Students: {len(app_data['students'])}")
-    print(f"Total Teachers: {len(app_data['teachers'])}")
-    print(f"Total Check-ins: {len(app_data['attendance'])}")
-    course_count = {}
-    for student in app_data['students']:
-        for course in student.get('enrolled_in', []):
-            course_count[course] = course_count.get(course, 0) + 1
-    if course_count:
-        most_popular = max(course_count, key=course_count.get)
-        print(f"Most Popular Course: {most_popular} ({course_count[most_popular]} students)")
-    print("="*50)
-
-
 #main menu
 def print_student_card(student_id):
     student = None
@@ -210,21 +162,17 @@ def main():
         print("[Student Management]")
         print("1. Add Student")
         print("2. View All Students")
-        print("3. Filter Students by Course")
-        print("4. Update Student")
-        print("5. Delete Student")
+        print("3. Update Student")
+        print("4. Delete Student")
         print("[Teacher Management]")
-        print("6. Add Teacher")
-        print("7. View All Teachers")
-        print("  8. Update Teacher")
-        print("  9. Delete Teacher")
+        print("5. Add Teacher")
+        print("6. View All Teachers")
+        print("7. Update Teacher")
+        print("8. Delete Teacher")
         print("【Check-in】")
-        print(" 10. Student Check-in")
-        print(" 11. View Attendance Records")
-        print("【Other】")
-        print(" 12. Print Student Card")
-        print(" 13. View Statistics")
-        print("  q. Quit and Save")
+        print("9. Student Check-in")
+        print("10. Print Student Card")
+        print("q. Quit and Save")
         print("="*45)
         choice = input("Enter your choice: ").strip().lower()
         made_change = False
@@ -241,12 +189,10 @@ def main():
             
         elif choice == '2':
             list_all_students()
-
-        elif choice == '3':
-            course = input("Enter course name: ").strip()
-            list_students_by_course(course)
             
-        elif choice == '4':
+        elif choice == '3':
+
+            #Prevent crashes due to incorrect input formats
             try:
                 student_id = int(input("Enter student ID: "))
                 print("Enter fields to update (leave blank to skip):")
@@ -266,7 +212,7 @@ def main():
             except ValueError:
                 print("Please enter a valid numeric ID")
 
-        elif choice == '5':
+        elif choice == '4':
             try:
                 student_id = int(input("Enter student ID to delete: "))
                 remove_student(student_id)
@@ -274,7 +220,7 @@ def main():
             except ValueError:
                 print("Please enter a valid numeric ID")
         
-        elif choice == '6':
+        elif choice == '5':
             name = input("Teacher name: ").strip()
             if not name:
                 print("Name cannot be empty")
@@ -283,10 +229,10 @@ def main():
             add_teacher(name, speciality)
             made_change = True 
 
-        elif choice == '7':
+        elif choice == '6':
             list_all_teachers()
             
-        elif choice == '8':
+        elif choice == '7':
             try:
                 teacher_id = int(input("Enter teacher ID: "))
                 name = input("New name (leave blank to skip): ").strip()
@@ -305,7 +251,7 @@ def main():
             except ValueError:
                 print("Please enter a valid numeric ID")
                 
-        elif choice == '9':
+        elif choice == '8':
             try:
                 teacher_id = int(input("Enter teacher ID to delete: "))
                 remove_teacher(teacher_id)
@@ -313,7 +259,7 @@ def main():
             except ValueError:
                 print("Please enter a valid numeric ID")
 
-        elif choice == '10':
+        elif choice == '9':
             try:
                 student_id = int(input("Enter student ID: "))
                 course_id = input("Enter course name: ").strip()
@@ -322,18 +268,12 @@ def main():
             except ValueError:
                 print("Please enter a valid numeric ID")
                 
-        elif choice == '11':
-            view_attendance_records()
-
-        elif choice == '12':
+        elif choice == '10':
             try:
                 student_id = int(input("Enter student ID: "))
                 print_student_card(student_id)
             except ValueError:
                 print("Please enter a valid numeric ID")
-                
-        elif choice == '13':
-            show_statistics()
             
         elif choice == 'q':
             print("Saving and exiting...")
