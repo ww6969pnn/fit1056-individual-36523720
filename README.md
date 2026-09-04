@@ -10,17 +10,6 @@ A Python-based music school management system for managing students, teachers, c
 - View attendance records
 - Data persistence using JSON file storage
 
-msms-project/
-├── app/
-│   ├── user.py          # Base User class
-│   ├── student.py       # StudentUser class
-│   ├── teacher.py       # TeacherUser and Course classes
-│   └── schedule.py      # ScheduleManager (core logic)
-├── data/
-│   └── msms.json        # Data storage file
-├── main.py              # Program entry point
-└── README.md
-
 All data is automatically saved to data/msms.json. The program loads existing data on startup.
 
 ## Installation
