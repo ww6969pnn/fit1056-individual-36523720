@@ -10,13 +10,6 @@ A Python-based music school management system for managing students, teachers, c
 - View attendance records
 - Data persistence using JSON file storage
 
-## Installation
-
-```bash
-git clone https://github.com/ww6969pnn/fit1056-individual-36523720.git
-cd msms-project
-
-##text
 msms-project/
 ├── app/
 │   ├── user.py          # Base User class
@@ -29,3 +22,9 @@ msms-project/
 └── README.md
 
 All data is automatically saved to data/msms.json. The program loads existing data on startup.
+
+## Installation
+
+```bash
+git clone <your-repo-url>
+cd msms-project
