@@ -6,45 +6,34 @@ def show_student_management_page(manager):
     st.subheader("Add Students")
     st.caption("Name should not exceed 15 characters; Instruments supported only: piano, guitar, violin, drums, flute")
     
-    with st.form("add_student_form"):
-        name = st.text_input("Student Name")
-        courses_input = st.text_input("Couse (Comma-separated, e.g. piano, guitar)")
-        submitted = st.form_submit_button("Submit")
+    all_courses = manager.get_all_courses()  # [{ID, Name, Teacher, ...}, ...]
 
-        if submitted:
-            if not name:
-                st.error("The name cannot be empty.")
-            else:
-                courses = [c.strip() for c in courses_input.split(",")] if courses_input else []
+    if not all_courses:
+        st.warning("There are no courses yet. Please create a course first.")
+    else:
+        course_options = {f"{c['ID']} - {c['Name']}": c['ID'] for c in all_courses}
 
-                ok = manager.add_student(name, courses)
-                if ok:
-                    st.success(f"Student added: {name}")
+        with st.form("add_student_form"):
+            name = st.text_input("Student Name")
+            selected = st.multiselect("Choose courses", list(course_options.keys()))
+            submitted = st.form_submit_button("Submit")
+
+            if submitted:
+                if not name:
+                    st.error("Name cannot be empty")
                 else:
-                    st.error("Addition failed. Please check the length of the name and whether the instrument is valid.")
+                    course_ids = [course_options[s] for s in selected]
+                    ok = manager.add_student(name, course_ids)
+                    if ok:
+                        st.success(f"Student added: {name}")
+                        st.rerun()
+                    else:
+                        st.error("Fail to add.")
 
     st.divider()
-
-    #students list + delete students
-    st.subheader("All Students")
+    st.subheader("Student List")
     students = manager.get_all_students()
     if students:
         st.dataframe(students, use_container_width=True)
-
-        st.subheader("Delete Students")
-        with st.form("delete_student_form"):
-            sid = st.text_input("The student ID to be deleted")
-            delete_submitted = st.form_submit_button("Delete")
-            if delete_submitted:
-                try:
-                    sid_int = int(sid)
-                    ok = manager.remove_student(sid_int)
-                    if ok:
-                        st.success("Student deleted: {sid_int}")
-                        st.rerun()
-                    else:
-                        st.error("No student with this ID was found.")
-                except ValueError:
-                    st.error("Invalid student ID")
     else:
         st.info("No student records available.")

@@ -1,9 +1,22 @@
 import streamlit as st
 
-def show_roster_page(manager):
-    st.header("Daily schedule and attendance registration")
 
-    st.subheader("Student attendance registration")
+def show_roster_page(manager):
+    st.header("Daily Roster and Check-in")
+
+    st.subheader("Daily Roster")
+    day = st.selectbox(
+        "Select Day",
+        ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    )
+    roster = manager.get_daily_roster(day)
+    if roster:
+        st.dataframe(roster, use_container_width=True)
+    else:
+        st.info(f"No courses scheduled on {day}.")
+
+    st.divider()
+    st.subheader("Student Check-in")
     with st.form("check_in_form"):
         student_id = st.text_input("Student ID")
         course_name = st.text_input("Course Name")
@@ -13,19 +26,19 @@ def show_roster_page(manager):
             try:
                 sid = int(student_id)
             except ValueError:
-                st.error("The student ID must be a series of numbers.")
+                st.error("Student ID must be a number.")
             else:
                 ok = manager.check_in(sid, course_name)
                 if ok:
-                    st.success("Sign-in successful")
+                    st.success("Check-in successful.")
+                    st.rerun()
                 else:
-                    st.error("Sign-in failed: The student does not exist, or the student has not registered for this course.")
+                    st.error("Check-in failed: student not found / course not found / student not enrolled.")
 
     st.divider()
-    st.subheader("Attendance Record")
+    st.subheader("Attendance Records")
     records = manager.get_attendance_records()
     if records:
         st.dataframe(records, use_container_width=True)
     else:
-        st.info("No attendance record available.")
-        
+        st.info("No attendance records.")
