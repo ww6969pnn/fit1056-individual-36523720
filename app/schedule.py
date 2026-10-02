@@ -120,6 +120,13 @@ class ScheduleManager:
         if len(name) > 15:
             print("Error: Name is too long! Maximum 15 characters.")
             return False
+<<<<<<< HEAD
+
+        if name.isdigit():
+            print("Error: Name cannot be a series of numbers.")
+            return False
+=======
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
         
         for c in courses:
             if c.lower() not in ALLOWED_INSTRUMENTS:
@@ -258,11 +265,30 @@ class ScheduleManager:
     
     def check_in(self, student_id, course_name):
         """Record a student's check-in for a course"""
+<<<<<<< HEAD
+        student = None 
+        for s in self.students:
+            if s.user_id == student_id:
+                student = s
+                break
+        
+        if not student:
+            print(f"No student found with ID {student_id}")
+            return False
+
+        enrolled = [c.lower() for c in student.enrolled_in]
+        if course_name.lower() not in enrolled:
+            print(f"Error: {student.name} is not enrolled in '{course_name}'")
+            print(f"Enrolled courses: {', '.join(student.enrolled_in)}")
+            return False
+    
+=======
         student_exists = any(s.user_id == student_id for s in self.students)
         if not student_exists:
             print(f"No student found with ID {student_id}")
             return False
         
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         record = {
             "student_id": student_id,
@@ -271,10 +297,15 @@ class ScheduleManager:
         }
         self.attendance.append(record)
         
+<<<<<<< HEAD
+        student.attendance.append({"course": course_name, "time": timestamp})
+            
+=======
         for student in self.students:
             if student.user_id == student_id:
                 student.attendance.append({"course": course_name, "time": timestamp})
                 break
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
         
         print(f"Student {student_id} checked in! Course: {course_name} Time: {timestamp}")
         self._save_data()
@@ -291,4 +322,42 @@ class ScheduleManager:
         print("="*50)
         for record in self.attendance:
             print(f"Student ID: {record['student_id']} | Course: {record['course_name']} | Time: {record['timestamp']}")
+<<<<<<< HEAD
+        print("="*50) 
+
+    #GUI data reading method
+    def get_all_students(self):
+        """Return the student list (in dictionary form) for use by the GUI"""
+        return [
+            {
+                "ID": s.user_id,
+                "Name": s.name,
+                "Courses": ", ".join(c.lower() for c in s.enrolled_in) if s.enrolled_in else "No courses"
+            }
+            for s in self.students
+        ]
+
+    def get_all_teachers(self):
+        """Return the list of teachers (in dictionary form) for use by the GUI"""
+        return [
+            {
+                "ID": t.user_id,
+                "Name": t.name,
+                "Specialty": t.specialty
+            }
+            for t in self.teachers
+        ]
+
+    def get_attendance_records(self):
+        """Return the attendance record list (in dictionary form) for use by the GUI."""
+        return [
+            {
+                "Student ID": r["student_id"],
+                "Course": r["course_name"],
+                "Time": r["timestamp"]
+            }
+            for r in self.attendance
+        ]
+=======
         print("="*50)
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25

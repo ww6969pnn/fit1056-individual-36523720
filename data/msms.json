@@ -10,6 +10,13 @@
                 {
                     "course": "jj",
                     "time": "2026-09-04 18:47:09"
+<<<<<<< HEAD
+                },
+                {
+                    "course": "piano",
+                    "time": "2026-09-11 16:05:45"
+=======
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
                 }
             ]
         },
@@ -17,19 +24,88 @@
             "id": 2,
             "name": "ty",
             "enrolled_in": [
+<<<<<<< HEAD
+                "drums"
+            ],
+            "attendance": [
+                {
+                    "course": "jj",
+                    "time": "2026-09-11 16:07:17"
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Liu Xin",
+            "enrolled_in": [
+                "guitar"
+            ],
+            "attendance": []
+        },
+        {
+            "id": 4,
+            "name": "Liu Qin",
+            "enrolled_in": [
+                "violin"
+            ],
+            "attendance": []
+        },
+        {
+            "id": 5,
+            "name": "Tia",
+            "enrolled_in": [
+                "VIOLIN"
+            ],
+            "attendance": []
+        },
+        {
+            "id": 6,
+            "name": "3",
+            "enrolled_in": [
+                "piano"
+            ],
+            "attendance": []
+        }
+    ],
+    "teachers": [
+        {
+            "id": 1,
+            "name": "io",
+            "speciality": "piano"
+        }
+    ],
+=======
                 "guitar"
             ],
             "attendance": []
         }
     ],
     "teachers": [],
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
     "attendance": [
         {
             "student_id": 1,
             "course_name": "jj",
             "timestamp": "2026-09-04 18:47:09"
+<<<<<<< HEAD
+        },
+        {
+            "student_id": 1,
+            "course_name": "piano",
+            "timestamp": "2026-09-11 16:05:45"
+        },
+        {
+            "student_id": 2,
+            "course_name": "jj",
+            "timestamp": "2026-09-11 16:07:17"
+        }
+    ],
+    "next_student_id": 7,
+    "next_teacher_id": 2
+=======
         }
     ],
     "next_student_id": 3,
     "next_teacher_id": 1
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
 }

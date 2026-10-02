@@ -1,5 +1,14 @@
 import sys
 import os
+<<<<<<< HEAD
+from gui.main_dashboard import launch
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+
+if __name__ == "__main__":
+    launch()
+=======
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -136,3 +145,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+>>>>>>> 365c02989596111c93300d157eb066304ec3aa25
