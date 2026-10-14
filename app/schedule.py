@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 import csv
+import re
 import logging
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
@@ -9,7 +10,7 @@ from app.teacher import TeacherUser, Course
 ALLOWED_INSTRUMENTS = {"piano", "guitar", "violin", "drums", "flute"}
 ALLOWED_DAYS = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
 ALLOWED_PAYMENT_METHODS = {"Cash", "Credit Card", "Debit Card", "Bank Transfer", "Third-Party Payment"}
-
+TIME_PATTERN = re.compile(r"^([01]\d|2[0-3]):[0-5]\d$")
 class ScheduleManager:
     """Main manager class - handles all data operations"""
 
@@ -155,7 +156,7 @@ class ScheduleManager:
         if course_ids is None:
             course_ids = []
 
-        if not name:
+        if not name or not name.strip():
             print("Error: Name cannot be empty.")
             return False
 
@@ -246,7 +247,9 @@ class ScheduleManager:
         """Delete a student from the system"""
         student = next((s for s in self.students if s.user_id == student_id), None)
         if not student:
+            self.last_error = f"No student found with ID {student_id}."
             print(f"No student found with ID {student_id}")
+            logging.warning(f"remove_student failed: no student with ID {student_id}.")
             return False
 
         # Remove the student from every course's enrolled_student_ids
@@ -257,15 +260,16 @@ class ScheduleManager:
         self.students = [s for s in self.students if s.user_id != student_id]
         print(f"Student ID {student_id} has been deleted.")
         self._save_data()
-        logging.warning(f"Student ID {student_id} removed.")
+        logging.warning(f"Student ID {student_id} removed from active list. " f"Payment and attendance records preserved.")
         return True
 
     # ---------- Teacher Management ----------
 
     def add_teacher(self, name, specialty):
         """Add a new teacher to the system"""
-        if not name:
+        if not name or not name.strip():
             print("Error: Name cannot be empty.")
+            logging.warning(f"add_teacher failed: empty name.")
             return False
 
         if name.isdigit():
@@ -276,6 +280,7 @@ class ScheduleManager:
             print("Error: Name is too long! Maximum 15 characters.")
             return False
 
+        specialty = specialty.lower().strip()
         if specialty.lower() not in ALLOWED_INSTRUMENTS:
             print(f"Invalid specialty '{specialty}'. Allowed: {ALLOWED_INSTRUMENTS}")
             return False
@@ -338,7 +343,7 @@ class ScheduleManager:
             c for c in self.courses
             if c.teacher and c.teacher.user_id == teacher_id
         ]
-        
+
         if dependent:
             names = ", ".join(c.name for c in dependent)
             self.last_error = f"Teacher '{teacher.name}' is still assigned to: {names}"
@@ -358,7 +363,7 @@ class ScheduleManager:
 
     def add_course(self, name, teacher_id, instrument, day=None, time=None):
         """Add a new course"""
-        if not name:
+        if not name or not name.strip():
             print("Error: Course name cannot be empty.")
             return False
 
@@ -367,13 +372,27 @@ class ScheduleManager:
             print(f"Teacher ID {teacher_id} does not exist.")
             return False
 
+        instrument = instrument.lower().strip()
         if instrument.lower() not in ALLOWED_INSTRUMENTS:
             print(f"Invalid instrument '{instrument}'. Allowed: {ALLOWED_INSTRUMENTS}")
             return False
 
-        if day and day not in ALLOWED_DAYS:
-            print(f"Invalid day '{day}'. Allowed: {ALLOWED_DAYS}")
+        if teacher.specialty.lower() != instrument.lower():
+            print(f"Teacher '{teacher.name}' specializes in '{teacher.specialty}', not '{instrument}'.")
+            logging.warning(f"add_course failed: teacher {teacher_id} ({teacher.specialty}) cannot teach {instrument}.")
             return False
+
+        if day:
+            day = day.capitalize()
+            if day not in ALLOWED_DAYS:
+                print(f"Invalid day '{day}'. Allowed: {ALLOWED_DAYS}")
+                return False
+
+        if time:
+            if not TIME_PATTERN.match(time):
+                print(f"Invalid time '{time}'. Expected HH:MM (24-hour format).")
+                logging.warning(f"add_course failed: invalid time '{time}'.")
+                return False
 
         course_id = self.next_course_id
         course = Course(course_id, name, teacher, instrument, day, time)
