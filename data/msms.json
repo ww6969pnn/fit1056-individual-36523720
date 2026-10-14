@@ -16,6 +16,22 @@
                     "time": "2026-10-02 20:35:47"
                 }
             ]
+        },
+        {
+            "id": 2,
+            "name": "Janny",
+            "enrolled_course_ids": [
+                2
+            ],
+            "attendance": []
+        },
+        {
+            "id": 3,
+            "name": "Owl",
+            "enrolled_course_ids": [
+                3
+            ],
+            "attendance": []
         }
     ],
     "teachers": [
@@ -47,6 +63,40 @@
                     "time": "15:00"
                 }
             ]
+        },
+        {
+            "course_id": 2,
+            "name": "12",
+            "teacher_id": 1,
+            "instrument": "violin",
+            "day": "Friday",
+            "time": "12:00",
+            "enrolled_student_ids": [
+                2
+            ],
+            "lessons": [
+                {
+                    "day": "Friday",
+                    "time": "12:00"
+                }
+            ]
+        },
+        {
+            "course_id": 3,
+            "name": "Drums 1",
+            "teacher_id": 2,
+            "instrument": "drums",
+            "day": "Wednesday",
+            "time": "24:00",
+            "enrolled_student_ids": [
+                3
+            ],
+            "lessons": [
+                {
+                    "day": "Wednesday",
+                    "time": "24:00"
+                }
+            ]
         }
     ],
     "attendance": [
@@ -61,7 +111,15 @@
             "timestamp": "2026-10-02 20:35:47"
         }
     ],
-    "next_student_id": 2,
+    "finance_log": [
+        {
+            "student_id": 2,
+            "amount": 10000.0,
+            "method": "Third-Party Payment",
+            "timestamp": "2026-10-14 13:03:00"
+        }
+    ],
+    "next_student_id": 4,
     "next_teacher_id": 3,
-    "next_course_id": 2
+    "next_course_id": 4
 }

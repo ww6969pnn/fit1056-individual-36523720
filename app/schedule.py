@@ -2,12 +2,13 @@ import json
 import os
 import datetime
 import csv
+import logging
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
 
 ALLOWED_INSTRUMENTS = {"piano", "guitar", "violin", "drums", "flute"}
 ALLOWED_DAYS = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"}
-
+ALLOWED_PAYMENT_METHODS = {"Cash", "Credit Card", "Debit Card", "Bank Transfer", "Third-Party Payment"}
 
 class ScheduleManager:
     """Main manager class - handles all data operations"""
@@ -51,7 +52,6 @@ class ScheduleManager:
                     student_data.get('enrolled_course_ids', [])
                 )
                 student.attendance = student_data.get('attendance', [])
-                self.finance_log = data.get('finance_log', [])
                 self.students.append(student)
 
             # Teachers
@@ -80,6 +80,7 @@ class ScheduleManager:
                 self.courses.append(course)
 
             self.attendance = data.get('attendance', [])
+            self.finance_log = data.get('finance_log', [])
             self.next_student_id = int(data.get('next_student_id', 1))
             self.next_teacher_id = int(data.get('next_teacher_id', 1))
             self.next_course_id = int(data.get('next_course_id', 1))
@@ -184,6 +185,7 @@ class ScheduleManager:
 
         print(f"Student '{name}' added successfully! ID: {student_id}")
         self._save_data()
+        logging.info(f"New student registered: ID {student_id}, name '{name}'.")
         return True
 
     def list_all_students(self):
@@ -254,6 +256,7 @@ class ScheduleManager:
         self.students = [s for s in self.students if s.user_id != student_id]
         print(f"Student ID {student_id} has been deleted.")
         self._save_data()
+        logging.warning(f"Student ID {student_id} removed.")
         return True
 
     # ---------- Teacher Management ----------
@@ -283,6 +286,7 @@ class ScheduleManager:
 
         print(f"Teacher '{name}' added successfully! ID: {teacher_id}")
         self._save_data()
+        logging.info(f"New teacher added: ID {teacher_id}, name '{name}'.")
         return True
 
     def list_all_teachers(self):
@@ -329,6 +333,7 @@ class ScheduleManager:
         if len(self.teachers) < original_count:
             print(f"Teacher ID {teacher_id} has been deleted.")
             self._save_data()
+            logging.warning(f"Teacher ID {teacher_id} removed.")
             return True
         else:
             print(f"No teacher found with ID {teacher_id}")
@@ -365,6 +370,7 @@ class ScheduleManager:
 
         print(f"Course '{name}' added successfully! ID: {course_id}")
         self._save_data()
+        logging.info(f"New course added: ID {course_id}, name '{name}'.")
         return True
 
     def list_all_courses(self):
@@ -394,6 +400,7 @@ class ScheduleManager:
         self.courses = [c for c in self.courses if c.course_id != course_id]
         print(f"Course ID {course_id} has been deleted.")
         self._save_data()
+        logging.warning(f"Course ID {course_id} removed.")
         return True
 
     def get_course_by_name(self, name):
@@ -458,20 +465,28 @@ class ScheduleManager:
         student = next((s for s in self.students if s.user_id == student_id), None)
         if not student:
             print(f"No student found with ID {student_id}")
+            logging.warning(f"record_payment failed: no student with ID {student_id}.")
             return False
 
         if amount <= 0:
             print("Error: Amount must be greater than 0.")
+            logging.warning(f"record_payment failed: invalid amount {amount}.")
             return False
 
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        if method not in ALLOWED_PAYMENT_METHODS:
+            print(f"Invalid payment method '{method}'. Allowed: {ALLOWED_PAYMENT_METHODS}")
+            logging.warning(f"record_payment failed: invalid method '{method}'.")
+            return False
+
         payment_record = {
             "student_id": student_id,
             "amount": amount,
             "method": method,
-            "timestamp": datetime.datetime.now().isoformat()
+            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         self.finance_log.append(payment_record)
+        self._save_data()
+        logging.info(f"Payment of {amount} recorded for student ID {student_id} via {method}.")
         print(f"Payment of {amount} for student {student_id} recorded.")
         return True
 
@@ -480,7 +495,7 @@ class ScheduleManager:
         return [p for p in self.finance_log if p["student_id"] == student_id]
 
     def export_report(self, kind, out_path):
-        """Export a report to a file. lind can be 'payments' or 'students'."""
+        """Export a report to a CSV file. kind can be 'finance' or 'attendance'."""
         print(f"Exporting {kind} report to {out_path}...")
 
         if kind == "finance":
@@ -491,15 +506,28 @@ class ScheduleManager:
             headers = ["student_id", "course_name", "timestamp"]
         else:
             print("Error: Unknown report type.")
+            logging.error(f"export_report failed: unknown kind '{kind}'.")
             return False
 
-        with open(out_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=headers)
-            writer.writeheader()
-            writer.writerows(data_to_export)
+        try:
+            parent = os.path.dirname(out_path)
+            if parent:
+                os.makedirs(parent, exist_ok=True)
 
-        print(f"Report exported to {out_path}")
-        return True
+            with open(out_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=headers)
+                writer.writeheader()
+                writer.writerows(data_to_export)
+
+            logging.info(f"Report '{kind}' exported to {out_path}.")
+            print(f"Report exported to {out_path}")
+            return True
+
+        except Exception as e:
+            logging.error(f"export_report failed: {e}")
+            print(f"Error exporting report: {e}")
+
+            return True
 
     # ---------- Check-in ----------
 
@@ -508,6 +536,7 @@ class ScheduleManager:
         student = next((s for s in self.students if s.user_id == student_id), None)
         if not student:
             print(f"No student found with ID {student_id}")
+            logging.warning(f"record_payment failed: no student with ID {student_id}.")
             return False
 
         course = self.get_course_by_name(course_name)

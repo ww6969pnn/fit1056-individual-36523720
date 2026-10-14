@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from app.schedule import ALLOWED_PAYMENT_METHODS
 
 def show_finance_page(manager):
     """Renders the UI for all financial operations."""
@@ -18,7 +19,7 @@ def show_finance_page(manager):
     with st.form("payment_form"):
         selected_student_label = st.selectbox("Select Student", list(student_list.keys()))
         amount = st.number_input("Payment Amount", min_value=0.01, step=1.0, format="%.2f")
-        method = st.text_input("Payment Method (e.g., Credit Card, Cash)")
+        method = st.selectbox("Payment Method", sorted(ALLOWED_PAYMENT_METHODS))
 
         submitted = st.form_submit_button("Record Payment")
         if submitted:
