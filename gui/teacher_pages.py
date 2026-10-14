@@ -9,7 +9,7 @@ def show_teacher_management_page(manager):
     st.subheader("Add Teacher")
 
     with st.form("add_teacher_form"):
-        name = st.text_input("Teacher Name")
+        name = st.text_input("Teacher Name").strip()
         specialty = st.selectbox("Specialty", sorted(ALLOWED_INSTRUMENTS))
         submitted = st.form_submit_button("Add")
 

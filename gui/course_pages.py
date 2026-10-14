@@ -13,7 +13,7 @@ def show_course_management_page(manager):
         teacher_options = {f"{t['ID']} - {t['Name']}": t['ID'] for t in teachers}
 
         with st.form("add_course_form"):
-            name = st.text_input("Course Name")
+            name = st.text_input("Course Name").strip()
             teacher_key = st.selectbox("Teacher", list(teacher_options.keys()))
             instrument = st.selectbox(
                 "Instrument",
@@ -23,7 +23,10 @@ def show_course_management_page(manager):
                 "Day",
                 ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
             )
-            time = st.text_input("Time (e.g. 15:00)")
+
+            time_options = [f"{h:02d}:{m:02d}" for h in range(8, 22) for m in (0, 30)]
+            time = st.selectbox("Time", time_options)
+
             submitted = st.form_submit_button("Add")
 
             if submitted:
@@ -36,7 +39,7 @@ def show_course_management_page(manager):
                         st.success(f"Course added: {name}")
                         st.rerun()
                     else:
-                        st.error("Failed to add course. Check the terminal output.")
+                        st.error(manager.last_error or "Failed to add course.")
 
     st.divider()
     st.subheader("Course List")
