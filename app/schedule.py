@@ -1,6 +1,7 @@
 import json
 import os
 import datetime
+import csv
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
 
@@ -463,48 +464,42 @@ class ScheduleManager:
             print("Error: Amount must be greater than 0.")
             return False
 
-        timestamp = datetime.datetime,now().strftime("%Y-%m-%d %H:%M:%S")
-        entry = {
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        payment_record = {
             "student_id": student_id,
-            "student_name": student.name,
-            "amount": float(amount),
+            "amount": amount,
             "method": method,
-            "timestamp": timestamp
+            "timestamp": datetime.datetime.now().isoformat()
         }
-        self.finance_log.append(entry)
-        print(f"Payment recorded: {student.name} paid ${amount:.2f} via {method}")
-        self._save_data()
+        self.finance_log.append(payment_record)
+        print(f"Payment of {amount} for student {student_id} recorded.")
         return True
 
     def get_payment_history(self, student_id):
         """Return all payment records for a given student."""
-        return [e for e in self.finance_log if e["student_id"] == student_id]
+        return [p for p in self.finance_log if p["student_id"] == student_id]
 
     def export_report(self, kind, out_path):
         """Export a report to a file. lind can be 'payments' or 'students'."""
-        try:
-            if kind == "payments":
-                rows = self.finance_log
-                headers = ["student_id", "student_name", "amount", "method", "timestamp"]
-            elif kind == "students":
-                rows = self.get_all_students()
-                headers = ["ID", "Name", "Courses"]
-            else:
-                print(f"Unknown report kind: {kind}")
-                return False
+        print(f"Exporting {kind} report to {out_path}...")
 
-            with open(out_path, 'w', encoding='utf-8') as f:
-                f.write(",".join(headers) + "\n")
-                for row in rows:
-                    f.write(",".join(str(row.get(h, "")) for h in headers) + "\n")
-
-            print(f"Report '{kind}' exported to {out_path}")
-            return True
-
-        except Exception as e:
-            print(f"Error exporting report: {e}")
+        if kind == "finance":
+            data_to_export = self.finance_log
+            headers = ["student_id", "amount", "method", "timestamp"]
+        elif kind == "attendance":
+            data_to_export = self.attendance     
+            headers = ["student_id", "course_name", "timestamp"]
+        else:
+            print("Error: Unknown report type.")
             return False
 
+        with open(out_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(data_to_export)
+
+        print(f"Report exported to {out_path}")
+        return True
 
     # ---------- Check-in ----------
 
