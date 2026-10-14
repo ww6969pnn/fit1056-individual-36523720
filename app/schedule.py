@@ -22,6 +22,7 @@ class ScheduleManager:
         self.teachers = []
         self.courses = []
         self.attendance = []
+        self.finance_log = []
         self.next_student_id = 1
         self.next_teacher_id = 1
         self.next_course_id = 1
@@ -49,6 +50,7 @@ class ScheduleManager:
                     student_data.get('enrolled_course_ids', [])
                 )
                 student.attendance = student_data.get('attendance', [])
+                self.finance_log = data.get('finance_log', [])
                 self.students.append(student)
 
             # Teachers
@@ -127,6 +129,7 @@ class ScheduleManager:
                 'teachers': teachers_data,
                 'courses': courses_data,
                 'attendance': self.attendance,
+                'finance_log': self.finance_log,
                 'next_student_id': self.next_student_id,
                 'next_teacher_id': self.next_teacher_id,
                 'next_course_id': self.next_course_id
@@ -447,6 +450,61 @@ class ScheduleManager:
         print(f"{student.name} switched from '{source_course_name}' to '{dest_course_name}'")
         self._save_data()
         return True
+
+    # ---------- Finance ----------
+    def record_payment(self, student_id, amount, method):
+        """Record a payment for a student."""
+        student = next((s for s in self.students if s.user_id == student_id), None)
+        if not student:
+            print(f"No student found with ID {student_id}")
+            return False
+
+        if amount <= 0:
+            print("Error: Amount must be greater than 0.")
+            return False
+
+        timestamp = datetime.datetime,now().strftime("%Y-%m-%d %H:%M:%S")
+        entry = {
+            "student_id": student_id,
+            "student_name": student.name,
+            "amount": float(amount),
+            "method": method,
+            "timestamp": timestamp
+        }
+        self.finance_log.append(entry)
+        print(f"Payment recorded: {student.name} paid ${amount:.2f} via {method}")
+        self._save_data()
+        return True
+
+    def get_payment_history(self, student_id):
+        """Return all payment records for a given student."""
+        return [e for e in self.finance_log if e["student_id"] == student_id]
+
+    def export_report(self, kind, out_path):
+        """Export a report to a file. lind can be 'payments' or 'students'."""
+        try:
+            if kind == "payments":
+                rows = self.finance_log
+                headers = ["student_id", "student_name", "amount", "method", "timestamp"]
+            elif kind == "students":
+                rows = self.get_all_students()
+                headers = ["ID", "Name", "Courses"]
+            else:
+                print(f"Unknown report kind: {kind}")
+                return False
+
+            with open(out_path, 'w', encoding='utf-8') as f:
+                f.write(",".join(headers) + "\n")
+                for row in rows:
+                    f.write(",".join(str(row.get(h, "")) for h in headers) + "\n")
+
+            print(f"Report '{kind}' exported to {out_path}")
+            return True
+
+        except Exception as e:
+            print(f"Error exporting report: {e}")
+            return False
+
 
     # ---------- Check-in ----------
 
