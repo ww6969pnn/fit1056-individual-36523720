@@ -28,6 +28,7 @@ class ScheduleManager:
         self.next_student_id = 1
         self.next_teacher_id = 1
         self.next_course_id = 1
+        self.last_error = None
 
         self._load_data()
 
@@ -326,18 +327,32 @@ class ScheduleManager:
         return False
 
     def remove_teacher(self, teacher_id):
-        """Delete a teacher from the system"""
-        original_count = len(self.teachers)
-        self.teachers = [t for t in self.teachers if t.user_id != teacher_id]
-
-        if len(self.teachers) < original_count:
-            print(f"Teacher ID {teacher_id} has been deleted.")
-            self._save_data()
-            logging.warning(f"Teacher ID {teacher_id} removed.")
-            return True
-        else:
+        """Delete a teacher from the system, refusing if they still teach courses."""
+        teacher = next((t for t in self.teachers if t.user_id == teacher_id), None)
+        if not teacher:
             print(f"No teacher found with ID {teacher_id}")
+            logging.warning(f"remove_teacher failed: no teacher with ID {teacher_id}.")
             return False
+
+        dependent = [
+            c for c in self.courses
+            if c.teacher and c.teacher.user_id == teacher_id
+        ]
+        
+        if dependent:
+            names = ", ".join(c.name for c in dependent)
+            self.last_error = f"Teacher '{teacher.name}' is still assigned to: {names}"
+            print(f"Cannot remove teacher '{teacher.name}': still assigned to course(s): {names}")
+            logging.warning(
+                f"remove_teacher refused: teacher ID {teacher_id} still assigned to {names}."
+            )
+            return False
+
+        self.teachers = [t for t in self.teachers if t.user_id != teacher_id]
+        print(f"Teacher ID {teacher_id} has been deleted.")
+        self._save_data()
+        logging.warning(f"Teacher ID {teacher_id} removed.")
+        return True
 
     # ---------- Course Management ----------
 
