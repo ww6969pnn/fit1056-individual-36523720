@@ -29,6 +29,7 @@ A Python-based music school management system with a Streamlit GUI.
 - **Payments** – record a payment, view a student's payment history, export reports
 
 ## Project Structure
+``` text
 msms-project/
 ├── app/
 │ ├── init.py
@@ -53,7 +54,7 @@ msms-project/
 ├── .gitignore
 ├── main.py
 └── README.md
-
+```
 
 ## Installation
 
@@ -67,7 +68,9 @@ pip install streamlit pytest
 streamlit run main.py
 
 ## How to Test
+```
 pytest
+```
 
 ## Design Notes
 - All business logic lives in ScheduleManager; GUI pages only render and call manager methods.
