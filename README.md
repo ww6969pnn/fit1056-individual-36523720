@@ -76,5 +76,6 @@ pytest
 - All business logic lives in ScheduleManager; GUI pages only render and call manager methods.
 - Validation (allowed payment methods, name length, teacher-course dependencies) is enforced in the manager, not just the GUI.
 - The data file is backed up once per session on startup, using st.session_state to avoid duplicate backups on Streamlit reruns.
+- Removing a student only removes them from the active list. Payment and attendance records are preserved for audit purposes.
 
 ---
